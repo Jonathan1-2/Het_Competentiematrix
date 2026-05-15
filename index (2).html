@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Competentiematrix – Junior Payroll Professional</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --lms-green: #2E7D32;
+      --lms-green-light: #E8F5E9;
+      --lms-green-mid: #4CAF50;
+      --lms-green-dark: #1B5E20;
+      --lms-red: #C62828;
+      --lms-red-light: #FFEBEE;
+      --lms-orange: #E65100;
+      --lms-orange-light: #FFF3E0;
+      --gray-50: #FAFAFA;
+      --gray-100: #F5F5F5;
+      --gray-200: #EEEEEE;
+      --gray-300: #E0E0E0;
+      --gray-500: #9E9E9E;
+      --gray-700: #616161;
+      --gray-900: #212121;
+      --radius: 10px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--gray-100);
+      color: var(--gray-900);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    /* ── Header card ── */
+    .header-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      border-left: 5px solid var(--lms-green);
+      box-shadow: var(--shadow);
+      padding: 20px 24px;
+      max-width: 900px;
+      margin: 0 auto 20px;
+    }
+    .header-card h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--lms-green-dark);
+      margin-bottom: 4px;
+    }
+    .header-card .subtitle {
+      font-size: 0.85rem;
+      color: var(--gray-700);
+    }
+    .header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .meta-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 180px;
+    }
+    .meta-field label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gray-500);
+    }
+    .meta-field input {
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      color: var(--gray-900);
+      background: var(--gray-50);
+    }
+    .meta-field input:focus {
+      outline: none;
+      border-color: var(--lms-green);
+    }
+    .meta-field input[readonly] {
+      background: var(--gray-100);
+      color: var(--gray-700);
+      cursor: default;
+    }
+
+    /* ── Scale legend ── */
+    .legend-card {
+      background: var(--lms-green-light);
+      border: 1px solid #A5D6A7;
+      border-radius: var(--radius);
+      padding: 12px 24px;
+      max-width: 900px;
+      margin: 0 auto 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 20px;
+      align-items: center;
+    }
+    .legend-card .legend-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--lms-green-dark);
+      width: 100%;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--lms-green-dark);
+    }
+    .legend-badge {
+      background: var(--lms-green);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.75rem;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── Role banner ── */
+    .role-banner {
+      max-width: 900px;
+      margin: 0 auto 20px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .role-banner.trainee {
+      background: var(--lms-orange-light);
+      border: 1px solid #FFCC80;
+      color: var(--lms-orange);
+    }
+    .role-banner.leidinggevende {
+      background: #E3F2FD;
+      border: 1px solid #90CAF9;
+      color: #1565C0;
+    }
+
+    /* ── Competentie blok ── */
+    .competentie-blok {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      max-width: 900px;
+      margin: 0 auto 16px;
+      overflow: hidden;
+    }
+    .competentie-header {
+      background: var(--lms-green);
+      color: #fff;
+      padding: 12px 20px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .competentie-header::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 50%;
+    }
+
+    /* ── Tabel ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead tr {
+      background: var(--gray-50);
+      border-bottom: 2px solid var(--gray-200);
+    }
+    thead th {
+      padding: 10px 16px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gray-500);
+      text-align: left;
+    }
+    thead th.center { text-align: center; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--gray-200);
+      transition: background 0.15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--gray-50); }
+
+    td {
+      padding: 10px 16px;
+      font-size: 0.875rem;
+      vertical-align: middle;
+    }
+    td.indicator { color: var(--gray-700); }
+    td.center { text-align: center; }
+
+    /* ── Score selector ── */
+    .score-selector {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+    }
+    .score-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid var(--gray-300);
+      background: #fff;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .score-btn:hover:not(:disabled) {
+      border-color: var(--lms-green);
+      color: var(--lms-green);
+      background: var(--lms-green-light);
+    }
+    .score-btn.active {
+      background: var(--lms-green);
+      border-color: var(--lms-green);
+      color: #fff;
+    }
+    .score-btn:disabled {
+      cursor: default;
+      opacity: 0.6;
+    }
+
+    /* score-btn kleuren per niveau */
+    .score-btn.active[data-score="1"] { background: #B71C1C; border-color: #B71C1C; }
+    .score-btn.active[data-score="2"] { background: #E64A19; border-color: #E64A19; }
+    .score-btn.active[data-score="3"] { background: #F57F17; border-color: #F57F17; }
+    .score-btn.active[data-score="4"] { background: #558B2F; border-color: #558B2F; }
+    .score-btn.active[data-score="5"] { background: #2E7D32; border-color: #2E7D32; }
+    .score-btn.active[data-score="6"] { background: #1B5E20; border-color: #1B5E20; }
+
+    /* ── Acties ── */
+    .acties-bar {
+      max-width: 900px;
+      margin: 24px auto 0;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    .btn {
+      padding: 10px 24px;
+      border-radius: 50px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--lms-green);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--lms-green-dark); }
+    .btn-secondary {
+      background: var(--gray-200);
+      color: var(--gray-700);
+    }
+    .btn-secondary:hover { background: var(--gray-300); }
+
+    /* ── Feedback bar ── */
+    .feedback-bar {
+      max-width: 900px;
+      margin: 16px auto 0;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+    .feedback-bar.success {
+      background: var(--lms-green-light);
+      border: 1px solid #A5D6A7;
+      color: var(--lms-green-dark);
+      display: flex;
+    }
+    .feedback-bar.error {
+      background: var(--lms-red-light);
+      border: 1px solid #EF9A9A;
+      color: var(--lms-red);
+      display: flex;
+    }
+    .feedback-bar .icon { font-size: 1.1rem; }
+
+    /* ── Loading ── */
+    #loading {
+      max-width: 900px;
+      margin: 40px auto;
+      text-align: center;
+      color: var(--gray-500);
+      font-size: 0.9rem;
+    }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--lms-green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #app { display: none; }
+  </style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  Matrix laden…
+</div>
+
+<div id="app">
+
+  <!-- Header -->
+  <div class="header-card">
+    <h1>Competentiematrix – Junior Payroll Professional</h1>
+    <p class="subtitle">Ontwikkelprofiel Young Professional</p>
+    <div class="header-meta">
+      <div class="meta-field">
+        <label>Naam trainee</label>
+        <input type="text" id="field-naam" placeholder="Naam invullen…" />
+      </div>
+      <div class="meta-field">
+        <label>E-mailadres</label>
+        <input type="text" id="field-email" readonly />
+      </div>
+      <div class="meta-field">
+        <label>Datum</label>
+        <input type="date" id="field-datum" />
+      </div>
+      <div class="meta-field">
+        <label>Praktijkbegeleider</label>
+        <input type="text" id="field-begeleider" placeholder="Naam begeleider…" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Schaallegenda -->
+  <div class="legend-card">
+    <span class="legend-title">Beoordelingsschaal</span>
+    <span class="legend-item"><span class="legend-badge">1</span> Startpunt</span>
+    <span class="legend-item"><span class="legend-badge">2</span> Op weg</span>
+    <span class="legend-item"><span class="legend-badge">3</span> Basisniveau</span>
+    <span class="legend-item"><span class="legend-badge">4</span> Gevorderd</span>
+    <span class="legend-item"><span class="legend-badge">5</span> Sterk</span>
+    <span class="legend-item"><span class="legend-badge">6</span> Expert</span>
+  </div>
+
+  <!-- Rol banner -->
+  <div class="role-banner" id="role-banner"></div>
+
+  <!-- Matrix wordt hier dynamisch gegenereerd -->
+  <div id="matrix-container"></div>
+
+  <!-- Acties -->
+  <div class="acties-bar">
+    <button class="btn btn-secondary" onclick="resetMatrix()">↺ Opnieuw</button>
+    <button class="btn btn-primary" onclick="slaOp()">Opslaan ✓</button>
+  </div>
+
+  <!-- Feedback -->
+  <div class="feedback-bar" id="feedback-bar">
+    <span class="icon" id="feedback-icon"></span>
+    <span id="feedback-tekst"></span>
+  </div>
+
+</div>
+
+<script>
+  // ══════════════════════════════════════════════════════
+  // ❶  CONFIGURATIE — vervang door jouw eigen waarden
+  // ══════════════════════════════════════════════════════
+  const SUPABASE_URL  = 'JOUW_SUPABASE_URL';        // bijv. https://xxxx.supabase.co
+  const SUPABASE_KEY  = 'JOUW_SUPABASE_ANON_KEY';   // anon/public key uit Supabase dashboard
+  const TABEL         = 'competenties';
+
+  // ══════════════════════════════════════════════════════
+  // ❷  COMPETENTIEDATA
+  // ══════════════════════════════════════════════════════
+  const MATRIX = [
+    {
+      competentie: 'Communiceren',
+      indicatoren: [
+        { id: 'com-1', naam: 'Relatiegericht / Netwerken' },
+        { id: 'com-2', naam: 'Inlevingsvermogen / Schriftelijk communiceren' },
+        { id: 'com-3', naam: 'Toegankelijkheid / Helpen' },
+        { id: 'com-4', naam: 'Overtuigkracht / Mondeling communiceren' },
+      ]
+    },
+    {
+      competentie: 'Innovatief vermogen',
+      indicatoren: [
+        { id: 'inn-1', naam: 'Toekomstgericht' },
+        { id: 'inn-2', naam: 'Creativiteit / Creëren' },
+      ]
+    },
+    {
+      competentie: 'Ondernemend vermogen',
+      indicatoren: [
+        { id: 'ond-1', naam: 'Proactief / Initiatief nemen' },
+        { id: 'ond-2', naam: 'Profielerend vermogen' },
+        { id: 'ond-3', naam: 'Doorzettingsvermogen / Volhouden' },
+        { id: 'ond-4', naam: 'Omgevingsgerichtheid / Opmerken' },
+      ]
+    },
+    {
+      competentie: 'Ontwikkelingsgericht handelen',
+      indicatoren: [
+        { id: 'ont-1', naam: 'Reflecterend vermogen' },
+        { id: 'ont-2', naam: 'Zelfsturend vermogen / Zelfsturing en ontwikkeling' },
+      ]
+    },
+    {
+      competentie: 'Organiserend vermogen',
+      indicatoren: [
+        { id: 'org-1', naam: 'Doelgerichtheid / Plannen & Organiseren' },
+        { id: 'org-2', naam: 'Procesgerichtheid / Controleren' },
+        { id: 'org-3', naam: 'Oplossingsgericht' },
+        { id: 'org-4', naam: 'Stressbestendigheid / Functioneren onder spanning' },
+      ]
+    },
+    {
+      competentie: 'Samenwerken',
+      indicatoren: [
+        { id: 'sam-1', naam: 'Taakgerichtheid' },
+        { id: 'sam-2', naam: 'Mensgerichtheid' },
+        { id: 'sam-3', naam: 'Aanpassingsvermogen / Flexibel reageren' },
+        { id: 'sam-4', naam: 'Leiderschap / Leiding geven' },
+      ]
+    },
+    {
+      competentie: 'Probleemoplossend vermogen',
+      indicatoren: [
+        { id: 'pro-1', naam: 'Onderzoekend vermogen' },
+        { id: 'pro-2', naam: 'Analytisch vermogen / Analyseren' },
+        { id: 'pro-3', naam: 'Methodisch handelen' },
+        { id: 'pro-4', naam: 'Conceptueel vermogen' },
+        { id: 'pro-5', naam: 'Oordeelsvorming / Beslissen' },
+      ]
+    },
+  ];
+
+  // ══════════════════════════════════════════════════════
+  // ❸  URL-PARAMETERS UITLEZEN
+  // ══════════════════════════════════════════════════════
+  const params  = new URLSearchParams(window.location.search);
+  const email   = params.get('email') || 'onbekend@voorbeeld.nl';
+  const role    = params.get('role') || 'trainee'; // 'trainee' of 'leidinggevende'
+
+  // Scores worden hier opgeslagen als { indicatorId: { pta, evaluatie } }
+  let scores = {};
+
+  // ══════════════════════════════════════════════════════
+  // ❹  SUPABASE HELPERS
+  // ══════════════════════════════════════════════════════
+  async function supabaseFetch(path, options = {}) {
+    const url = `${SUPABASE_URL}/rest/v1/${path}`;
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': options.prefer || 'return=minimal',
+        ...options.headers,
+      },
+      ...options,
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err);
+    }
+    if (res.status === 204 || res.headers.get('content-length') === '0') return null;
+    return res.json();
+  }
+
+  async function laadData() {
+    const data = await supabaseFetch(
+      `${TABEL}?trainee_email=eq.${encodeURIComponent(email)}&select=indicator_id,pta,evaluatie`
+    );
+    scores = {};
+    if (data) {
+      data.forEach(r => {
+        scores[r.indicator_id] = { pta: r.pta, evaluatie: r.evaluatie };
+      });
+    }
+  }
+
+  async function slaScoreOp(indicatorId, kolom, waarde) {
+    // Upsert op basis van trainee_email + indicator_id
+    await supabaseFetch(TABEL, {
+      method: 'POST',
+      prefer: 'resolution=merge-duplicates,return=minimal',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({
+        trainee_email: email,
+        indicator_id: indicatorId,
+        [kolom]: waarde,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+  }
+
+  // ══════════════════════════════════════════════════════
+  // ❺  UI OPBOUWEN
+  // ══════════════════════════════════════════════════════
+  function bouwMatrix() {
+    const container = document.getElementById('matrix-container');
+    container.innerHTML = '';
+
+    const isTrainee = role === 'trainee';
+    const ptaDisabled    = !isTrainee;           // trainee vult PTA in
+    const evalDisabled   = isTrainee;            // leidinggevende vult Evaluatie in
+
+    MATRIX.forEach(blok => {
+      const el = document.createElement('div');
+      el.className = 'competentie-blok';
+
+      let rijen = blok.indicatoren.map(ind => {
+        const sc = scores[ind.id] || {};
+        return `
+          <tr>
+            <td class="indicator">${ind.naam}</td>
+            <td class="center">
+              <div class="score-selector" data-id="${ind.id}" data-kolom="pta">
+                ${[1,2,3,4,5,6].map(n => `
+                  <button
+                    class="score-btn ${sc.pta === n ? 'active' : ''}"
+                    data-score="${n}"
+                    ${ptaDisabled ? 'disabled' : ''}
+                    onclick="setScore('${ind.id}','pta',${n},this)"
+                  >${n}</button>
+                `).join('')}
+              </div>
+            </td>
+            <td class="center">
+              <div class="score-selector" data-id="${ind.id}" data-kolom="evaluatie">
+                ${[1,2,3,4,5,6].map(n => `
+                  <button
+                    class="score-btn ${sc.evaluatie === n ? 'active' : ''}"
+                    data-score="${n}"
+                    ${evalDisabled ? 'disabled' : ''}
+                    onclick="setScore('${ind.id}','evaluatie',${n},this)"
+                  >${n}</button>
+                `).join('')}
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+
+      el.innerHTML = `
+        <div class="competentie-header">${blok.competentie}</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Indicator</th>
+              <th class="center">PTA <span style="font-weight:400;text-transform:none">(trainee)</span></th>
+              <th class="center">Evaluatie <span style="font-weight:400;text-transform:none">(begeleider)</span></th>
+            </tr>
+          </thead>
+          <tbody>${rijen}</tbody>
+        </table>`;
+      container.appendChild(el);
+    });
+  }
+
+  function setScore(indicatorId, kolom, waarde, btn) {
+    // Update lokale state
+    if (!scores[indicatorId]) scores[indicatorId] = {};
+    scores[indicatorId][kolom] = waarde;
+
+    // Update UI — deactiveer andere knoppen in dezelfde rij/kolom
+    const selector = btn.closest('.score-selector');
+    selector.querySelectorAll('.score-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // ══════════════════════════════════════════════════════
+  // ❻  OPSLAAN
+  // ══════════════════════════════════════════════════════
+  async function slaOp() {
+    verbergFeedback();
+    try {
+      // Sla alle scores op
+      const beloften = [];
+      for (const [indId, sc] of Object.entries(scores)) {
+        if (sc.pta !== undefined) beloften.push(slaScoreOp(indId, 'pta', sc.pta));
+        if (sc.evaluatie !== undefined) beloften.push(slaScoreOp(indId, 'evaluatie', sc.evaluatie));
+      }
+      // Sla ook profielvelden op (naam, datum, begeleider) als één record in aparte tabel
+      // — of voeg ze toe aan het eerste indicator-record als je wilt vereenvoudigen
+      await Promise.all(beloften);
+      toonFeedback('success', '✓', 'Opgeslagen! De matrix is bijgewerkt in de database.');
+    } catch (e) {
+      toonFeedback('error', '✕', 'Opslaan mislukt. Controleer je Supabase-configuratie. (' + e.message + ')');
+    }
+  }
+
+  function resetMatrix() {
+    scores = {};
+    bouwMatrix();
+    verbergFeedback();
+  }
+
+  function toonFeedback(type, icon, tekst) {
+    const bar = document.getElementById('feedback-bar');
+    bar.className = 'feedback-bar ' + type;
+    document.getElementById('feedback-icon').textContent = icon;
+    document.getElementById('feedback-tekst').textContent = tekst;
+  }
+
+  function verbergFeedback() {
+    document.getElementById('feedback-bar').className = 'feedback-bar';
+  }
+
+  // ══════════════════════════════════════════════════════
+  // ❼  INITIALISATIE
+  // ══════════════════════════════════════════════════════
+  async function init() {
+    // Vul vaste velden
+    document.getElementById('field-email').value = email;
+    document.getElementById('field-datum').value = new Date().toISOString().split('T')[0];
+
+    // Rolbanner
+    const banner = document.getElementById('role-banner');
+    if (role === 'leidinggevende') {
+      banner.className = 'role-banner leidinggevende';
+      banner.innerHTML = '👤 Je bekijkt de matrix als <strong>leidinggevende / praktijkbegeleider</strong> — je kunt de evaluatiekolom invullen.';
+    } else {
+      banner.className = 'role-banner trainee';
+      banner.innerHTML = '🎓 Je vult de matrix in als <strong>trainee</strong> — vul de PTA-kolom in op basis van je eigen inschatting.';
+    }
+
+    // Data ophalen uit Supabase
+    try {
+      await laadData();
+    } catch (e) {
+      console.warn('Kon data niet laden:', e.message);
+    }
+
+    bouwMatrix();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  }
+
+  init();
+</script>
+</body>
+</html>
