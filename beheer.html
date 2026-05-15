@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beheer – Competentiematrix</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --lms-green: #2E7D32;
+      --lms-green-light: #E8F5E9;
+      --lms-green-dark: #1B5E20;
+      --lms-red: #C62828;
+      --lms-red-light: #FFEBEE;
+      --gray-50: #FAFAFA;
+      --gray-100: #F5F5F5;
+      --gray-200: #EEEEEE;
+      --gray-300: #E0E0E0;
+      --gray-500: #9E9E9E;
+      --gray-700: #616161;
+      --gray-900: #212121;
+      --radius: 10px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--gray-100); color: var(--gray-900); min-height: 100vh; padding: 24px 16px 48px; }
+
+    .header-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      border-left: 5px solid var(--lms-green);
+      box-shadow: var(--shadow);
+      padding: 20px 24px;
+      max-width: 860px;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-card h1 { font-size: 1.15rem; font-weight: 700; color: var(--lms-green-dark); }
+    .header-card p { font-size: 0.82rem; color: var(--gray-500); margin-top: 3px; }
+
+    .sectie {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      max-width: 860px;
+      margin: 0 auto 20px;
+      overflow: hidden;
+    }
+    .sectie-header {
+      background: var(--lms-green);
+      color: #fff;
+      padding: 12px 20px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: var(--gray-50); border-bottom: 2px solid var(--gray-200); }
+    thead th { padding: 9px 16px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500); text-align: left; }
+    tbody tr { border-bottom: 1px solid var(--gray-200); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--gray-50); }
+    td { padding: 10px 16px; font-size: 0.875rem; vertical-align: middle; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 50px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .badge-trainee { background: #E3F2FD; color: #1565C0; }
+    .badge-leidinggevende { background: var(--lms-green-light); color: var(--lms-green-dark); }
+
+    .verwijder-btn {
+      background: none;
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      color: var(--lms-red);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+    .verwijder-btn:hover { background: var(--lms-red-light); border-color: var(--lms-red); }
+
+    .toevoeg-rij {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--gray-50);
+      border-top: 1px solid var(--gray-200);
+      flex-wrap: wrap;
+    }
+    .toevoeg-rij input, .toevoeg-rij select {
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: var(--gray-900);
+      background: #fff;
+    }
+    .toevoeg-rij input:focus, .toevoeg-rij select:focus { outline: none; border-color: var(--lms-green); }
+    .toevoeg-rij input[placeholder="E-mailadres"] { flex: 1; min-width: 180px; }
+    .toevoeg-rij input[placeholder="Naam"] { width: 140px; }
+
+    .btn-add {
+      background: var(--lms-green);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-add:hover { background: var(--lms-green-dark); }
+
+    .feedback {
+      max-width: 860px;
+      margin: 0 auto 12px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: none;
+    }
+    .feedback.success { background: var(--lms-green-light); border: 1px solid #A5D6A7; color: var(--lms-green-dark); display: block; }
+    .feedback.error { background: var(--lms-red-light); border: 1px solid #EF9A9A; color: var(--lms-red); display: block; }
+
+    .lege-staat { padding: 16px; font-size: 0.85rem; color: var(--gray-500); text-align: center; }
+
+    .spinner { width: 24px; height: 24px; border: 3px solid var(--gray-200); border-top-color: var(--lms-green); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="header-card">
+  <div>
+    <h1>⚙️ Beheer – Competentiematrix</h1>
+    <p>Gebruikers en koppelingen beheren</p>
+  </div>
+  <a href="index.html" style="font-size:0.82rem;color:var(--lms-green);text-decoration:none">← Terug naar matrix</a>
+</div>
+
+<div class="feedback" id="feedback"></div>
+
+<!-- Gebruikers -->
+<div class="sectie">
+  <div class="sectie-header">
+    👥 Gebruikers
+    <span style="font-weight:400;font-size:0.78rem;opacity:0.8">Alle toegestane e-mailadressen</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Naam</th>
+        <th>E-mailadres</th>
+        <th>Rol</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="gebruikers-tbody">
+      <tr><td colspan="4"><div class="spinner"></div></td></tr>
+    </tbody>
+  </table>
+  <div class="toevoeg-rij">
+    <input type="text" id="nieuw-naam" placeholder="Naam" />
+    <input type="email" id="nieuw-email" placeholder="E-mailadres" />
+    <select id="nieuw-rol">
+      <option value="trainee">Trainee</option>
+      <option value="leidinggevende">Leidinggevende</option>
+    </select>
+    <button class="btn-add" onclick="voegGebruikerToe()">+ Toevoegen</button>
+  </div>
+</div>
+
+<!-- Koppelingen -->
+<div class="sectie">
+  <div class="sectie-header">
+    🔗 Koppelingen
+    <span style="font-weight:400;font-size:0.78rem;opacity:0.8">Welke leidinggevende ziet welke trainee</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Leidinggevende</th>
+        <th>Trainee</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="koppelingen-tbody">
+      <tr><td colspan="3"><div class="spinner"></div></td></tr>
+    </tbody>
+  </table>
+  <div class="toevoeg-rij">
+    <select id="koppel-lg" style="flex:1;min-width:180px">
+      <option value="">— Leidinggevende —</option>
+    </select>
+    <select id="koppel-trainee" style="flex:1;min-width:180px">
+      <option value="">— Trainee —</option>
+    </select>
+    <button class="btn-add" onclick="voegKoppelingToe()">+ Koppelen</button>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://jgycmakaugasithuszlc.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpneWNtYWthdWdhc2l0aHVzemxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4Mjg1MjcsImV4cCI6MjA5NDQwNDUyN30.egxFASu1eRM1fH-zeAhM8ibXdP0Koc5JedpsX-d7j2A';
+
+  async function api(path, options = {}) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      method: options.method || 'GET',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': options.prefer || 'return=minimal',
+      },
+      body: options.body,
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  }
+
+  function toonFeedback(type, tekst) {
+    const el = document.getElementById('feedback');
+    el.className = 'feedback ' + type;
+    el.textContent = tekst;
+    setTimeout(() => el.className = 'feedback', 4000);
+  }
+
+  // ── Gebruikers ──
+  async function laadGebruikers() {
+    const data = await api('gebruikers?order=rol,naam');
+    const tbody = document.getElementById('gebruikers-tbody');
+
+    // Vul dropdowns voor koppelingen
+    const lgSelect = document.getElementById('koppel-lg');
+    const trSelect = document.getElementById('koppel-trainee');
+    lgSelect.innerHTML = '<option value="">— Leidinggevende —</option>';
+    trSelect.innerHTML = '<option value="">— Trainee —</option>';
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="lege-staat">Geen gebruikers gevonden.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.map(g => `
+      <tr>
+        <td>${g.naam || '—'}</td>
+        <td>${g.email}</td>
+        <td><span class="badge badge-${g.rol}">${g.rol}</span></td>
+        <td><button class="verwijder-btn" onclick="verwijderGebruiker('${g.id}', '${g.email}')">✕ Verwijder</button></td>
+      </tr>`).join('');
+
+    data.forEach(g => {
+      if (g.rol === 'leidinggevende') {
+        lgSelect.innerHTML += `<option value="${g.email}">${g.naam || g.email}</option>`;
+      } else {
+        trSelect.innerHTML += `<option value="${g.email}">${g.naam || g.email}</option>`;
+      }
+    });
+  }
+
+  async function voegGebruikerToe() {
+    const naam  = document.getElementById('nieuw-naam').value.trim();
+    const email = document.getElementById('nieuw-email').value.trim().toLowerCase();
+    const rol   = document.getElementById('nieuw-rol').value;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toonFeedback('error', 'Vul een geldig e-mailadres in.');
+      return;
+    }
+    try {
+      await api('gebruikers', {
+        method: 'POST',
+        prefer: 'return=minimal',
+        body: JSON.stringify({ naam, email, rol }),
+      });
+      document.getElementById('nieuw-naam').value = '';
+      document.getElementById('nieuw-email').value = '';
+      toonFeedback('success', `✓ ${email} toegevoegd als ${rol}.`);
+      await laadGebruikers();
+      await laadKoppelingen();
+    } catch(e) {
+      toonFeedback('error', 'Toevoegen mislukt. E-mailadres bestaat mogelijk al.');
+    }
+  }
+
+  async function verwijderGebruiker(id, email) {
+    if (!confirm(`Weet je zeker dat je ${email} wilt verwijderen?`)) return;
+    try {
+      await api(`gebruikers?id=eq.${id}`, { method: 'DELETE' });
+      toonFeedback('success', `✓ ${email} verwijderd.`);
+      await laadGebruikers();
+      await laadKoppelingen();
+    } catch(e) {
+      toonFeedback('error', 'Verwijderen mislukt.');
+    }
+  }
+
+  // ── Koppelingen ──
+  async function laadKoppelingen() {
+    const data = await api('koppeling?order=leidinggevende_email,trainee_naam');
+    const tbody = document.getElementById('koppelingen-tbody');
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" class="lege-staat">Geen koppelingen gevonden.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(k => `
+      <tr>
+        <td>${k.leidinggevende_email}</td>
+        <td>${k.trainee_naam || k.trainee_email}<br><span style="font-size:0.75rem;color:var(--gray-500)">${k.trainee_email}</span></td>
+        <td><button class="verwijder-btn" onclick="verwijderKoppeling('${k.id}')">✕ Verwijder</button></td>
+      </tr>`).join('');
+  }
+
+  async function voegKoppelingToe() {
+    const lg      = document.getElementById('koppel-lg').value;
+    const trainee = document.getElementById('koppel-trainee').value;
+    if (!lg || !trainee) {
+      toonFeedback('error', 'Kies een leidinggevende en een trainee.');
+      return;
+    }
+
+    // Haal trainee naam op
+    const gebruikers = await api(`gebruikers?email=eq.${encodeURIComponent(trainee)}&select=naam`);
+    const naam = gebruikers && gebruikers[0] ? gebruikers[0].naam : trainee;
+
+    try {
+      await api('koppeling', {
+        method: 'POST',
+        body: JSON.stringify({ leidinggevende_email: lg, trainee_email: trainee, trainee_naam: naam }),
+      });
+      toonFeedback('success', `✓ Koppeling aangemaakt.`);
+      await laadKoppelingen();
+    } catch(e) {
+      toonFeedback('error', 'Koppeling mislukt. Bestaat deze combinatie al?');
+    }
+  }
+
+  async function verwijderKoppeling(id) {
+    if (!confirm('Weet je zeker dat je deze koppeling wilt verwijderen?')) return;
+    try {
+      await api(`koppeling?id=eq.${id}`, { method: 'DELETE' });
+      toonFeedback('success', '✓ Koppeling verwijderd.');
+      await laadKoppelingen();
+    } catch(e) {
+      toonFeedback('error', 'Verwijderen mislukt.');
+    }
+  }
+
+  // ── Init ──
+  async function init() {
+    await Promise.all([laadGebruikers(), laadKoppelingen()]);
+  }
+  init();
+</script>
+</body>
+</html>
