@@ -588,7 +588,7 @@
         <label>E-mailadres</label>
         <div style="display:flex;align-items:center;gap:4px">
           <input type="text" id="field-email" readonly style="flex:1" />
-          <span class="uitloggen-link" onclick="uitloggen()" title="Ander account gebruiken">↩ Wissel</span>
+          <span class="uitloggen-link" onclick="role === 'leidinggevende' ? toonMenu() : uitloggen()" title="Ander account" id="wissel-knop">↩ Wissel</span>
         </div>
       </div>
       <div class="meta-field">
@@ -641,6 +641,7 @@
   <div class="acties-bar">
     <button class="btn btn-secondary" onclick="resetMatrix()">↺ Opnieuw</button>
     <button class="btn btn-primary" onclick="slaOp()">Opslaan ✓</button>
+    <button class="btn btn-secondary" style="margin-left:auto" onclick="uitloggen()">↩ Uitloggen</button>
   </div>
 
   <!-- Feedback -->
