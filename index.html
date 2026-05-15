@@ -544,9 +544,20 @@
 <div id="menu-screen">
   <div class="menu-header">
     <h2>👤 Leidinggevende portaal</h2>
-    <p>Kies een trainee om de competentiematrix te bekijken en te beoordelen.</p>
+    <p>Kies een trainee om de competentiematrix te bekijken en te beoordelen, of open je eigen matrix.</p>
     <div class="menu-email" id="menu-email-label"></div>
   </div>
+
+  <!-- Eigen matrix knop -->
+  <div class="trainee-kaart" id="eigen-matrix-knop" onclick="openEigenMatrix()" style="margin-bottom:6px;border-color:#1565C0;background:#E3F2FD">
+    <div>
+      <div class="naam" style="color:#1565C0">📋 Mijn eigen matrix</div>
+      <div class="mail">PTA invullen voor jezelf</div>
+    </div>
+    <span class="pijl" style="color:#1565C0">→</span>
+  </div>
+
+  <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--gray-500);margin:14px 0 8px">Mijn trainees</div>
   <div class="trainee-lijst" id="trainee-lijst"></div>
   <div style="margin-top:16px;text-align:right">
     <span class="uitloggen-link" onclick="uitloggen()">↩ Uitloggen</span>
@@ -824,21 +835,32 @@
     document.getElementById('menu-screen').style.display = 'block';
   }
 
+  async function openEigenMatrix() {
+    const lgEmail = localStorage.getItem('cm_lg_email') || email;
+    email = lgEmail;
+    document.getElementById('menu-screen').style.display = 'none';
+    toonLaadScherm();
+    document.getElementById('terug-wrap').style.display = 'block';
+    _eigenMatrixModus = true;
+    await startApp('Eigen matrix');
+  }
+
+  // Vlag voor eigen matrix modus
+  let _eigenMatrixModus = false;
+
   async function openTraineeMatrix(traineeEmail, traineeNaam) {
+    _eigenMatrixModus = false;
     email = traineeEmail;
     document.getElementById('menu-screen').style.display = 'none';
     toonLaadScherm();
-
-    // Toon terugknop
     document.getElementById('terug-wrap').style.display = 'block';
-
     await startApp(traineeNaam);
   }
 
   function toonMenu() {
+    _eigenMatrixModus = false;
     document.getElementById('app').style.display = 'none';
     document.getElementById('terug-wrap').style.display = 'none';
-    // Herstel leidinggevende email
     email = localStorage.getItem('cm_lg_email') || '';
     laadMenuLeidinggevende();
   }
@@ -915,9 +937,10 @@
     const container = document.getElementById('matrix-container');
     container.innerHTML = '';
 
-    const isTrainee = role === 'trainee';
-    const ptaDisabled    = !isTrainee;           // trainee vult PTA in
-    const evalDisabled   = isTrainee;            // leidinggevende vult Evaluatie in
+    // Eigen matrix modus: leidinggevende vult alleen PTA in (als trainee)
+    const effectiefTrainee = role === 'trainee' || _eigenMatrixModus;
+    const ptaDisabled  = !effectiefTrainee;
+    const evalDisabled = effectiefTrainee;
 
     MATRIX.forEach(blok => {
       const el = document.createElement('div');
@@ -1129,7 +1152,10 @@
 
     // Rolbanner
     const banner = document.getElementById('role-banner');
-    if (role === 'leidinggevende') {
+    if (_eigenMatrixModus) {
+      banner.className = 'role-banner trainee';
+      banner.innerHTML = `🎓 Je vult je <strong>eigen matrix</strong> in — vul de PTA-kolom in op basis van je eigen inschatting.`;
+    } else if (role === 'leidinggevende') {
       banner.className = 'role-banner leidinggevende';
       banner.innerHTML = `👤 Je bekijkt de matrix van <strong>${traineeNaam || email}</strong> — je kunt de evaluatiekolom invullen.`;
     } else {
