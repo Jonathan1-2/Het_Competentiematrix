@@ -774,17 +774,39 @@
       return;
     }
     fout.style.display = 'none';
+    document.getElementById('login-screen').querySelector('button').disabled = true;
+    document.getElementById('login-screen').querySelector('button').textContent = 'Controleren…';
 
-    const sleutel = role === 'leidinggevende' ? 'cm_lg_email' : 'cm_email';
-    localStorage.setItem(sleutel, input);
-    email = input;
-    document.getElementById('login-screen').style.display = 'none';
-    toonLaadScherm();
-    if (role === 'leidinggevende') {
-      laadMenuLeidinggevende();
-    } else {
-      startApp();
-    }
+    // Check of email bekend is in de gebruikers tabel
+    supabaseFetch(`gebruikers?email=eq.${encodeURIComponent(input)}&select=email,rol,naam`)
+      .then(data => {
+        document.getElementById('login-screen').querySelector('button').disabled = false;
+        document.getElementById('login-screen').querySelector('button').textContent = 'Matrix openen →';
+
+        if (!data || data.length === 0) {
+          fout.textContent = 'Dit e-mailadres is onbekend. Neem contact op met de beheerder.';
+          fout.style.display = 'block';
+          return;
+        }
+
+        const gebruiker = data[0];
+        const sleutel = role === 'leidinggevende' ? 'cm_lg_email' : 'cm_email';
+        localStorage.setItem(sleutel, input);
+        email = input;
+        document.getElementById('login-screen').style.display = 'none';
+        toonLaadScherm();
+        if (role === 'leidinggevende') {
+          laadMenuLeidinggevende();
+        } else {
+          startApp(gebruiker.naam);
+        }
+      })
+      .catch(e => {
+        document.getElementById('login-screen').querySelector('button').disabled = false;
+        document.getElementById('login-screen').querySelector('button').textContent = 'Matrix openen →';
+        fout.textContent = 'Fout bij controleren. Probeer opnieuw.';
+        fout.style.display = 'block';
+      });
   }
 
   function toonLaadScherm() {
@@ -1192,20 +1214,33 @@
     if (role === 'leidinggevende') {
       const opgeslagen = localStorage.getItem('cm_lg_email');
       if (opgeslagen) {
-        email = opgeslagen;
-        laadMenuLeidinggevende();
-      } else {
-        toonLoginScherm('leidinggevende');
+        // Valideer opgeslagen sessie
+        try {
+          const data = await supabaseFetch(`gebruikers?email=eq.${encodeURIComponent(opgeslagen)}&select=email`);
+          if (data && data.length > 0) {
+            email = opgeslagen;
+            laadMenuLeidinggevende();
+            return;
+          }
+        } catch(e) {}
+        localStorage.removeItem('cm_lg_email');
       }
+      toonLoginScherm('leidinggevende');
     } else {
       const opgeslagen = localStorage.getItem('cm_email');
       if (opgeslagen) {
-        email = opgeslagen;
-        toonLaadScherm();
-        await startApp();
-      } else {
-        toonLoginScherm('trainee');
+        try {
+          const data = await supabaseFetch(`gebruikers?email=eq.${encodeURIComponent(opgeslagen)}&select=email,naam`);
+          if (data && data.length > 0) {
+            email = opgeslagen;
+            toonLaadScherm();
+            await startApp(data[0].naam);
+            return;
+          }
+        } catch(e) {}
+        localStorage.removeItem('cm_email');
       }
+      toonLoginScherm('trainee');
     }
   }
 
