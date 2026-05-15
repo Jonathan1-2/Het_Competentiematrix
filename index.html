@@ -1006,11 +1006,16 @@
     }
   }
 
-  function resetMatrix() {
-    scores = {};
+  async function resetMatrix() {
+    verbergFeedback();
+    try {
+      await laadData();
+    } catch (e) {
+      console.warn('Kon data niet herladen:', e.message);
+    }
+    if (radarChart) { radarChart.destroy(); radarChart = null; }
     bouwMatrix();
     bouwRadar();
-    verbergFeedback();
   }
 
   function toonFeedback(type, icon, tekst) {
