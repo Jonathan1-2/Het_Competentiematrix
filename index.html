@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Competentiematrix – Junior Payroll Professional</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
     :root {
       --lms-green: #2E7D32;
@@ -344,6 +345,50 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     #app { display: none; }
+
+    /* ── Radar chart card ── */
+    .radar-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      border-left: 5px solid var(--lms-green);
+      box-shadow: var(--shadow);
+      max-width: 900px;
+      margin: 0 auto 20px;
+      padding: 20px 24px;
+    }
+    .radar-card h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--lms-green-dark);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .radar-legend {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 14px;
+    }
+    .radar-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.8rem;
+      color: var(--gray-700);
+    }
+    .radar-legend-dot {
+      width: 28px;
+      height: 3px;
+      border-radius: 2px;
+    }
+    #radar-canvas-wrap {
+      display: flex;
+      justify-content: center;
+    }
+    #radar-canvas-wrap canvas {
+      max-width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -392,6 +437,24 @@
 
   <!-- Rol banner -->
   <div class="role-banner" id="role-banner"></div>
+
+  <!-- Spinnenwebdiagram -->
+  <div class="radar-card">
+    <h2>Ontwikkelprofiel Young Professional</h2>
+    <div id="radar-canvas-wrap">
+      <canvas id="radar-chart" width="620" height="500"></canvas>
+    </div>
+    <div class="radar-legend">
+      <div class="radar-legend-item">
+        <div class="radar-legend-dot" style="background:#1565C0"></div>
+        PTA (trainee)
+      </div>
+      <div class="radar-legend-item">
+        <div class="radar-legend-dot" style="background:#C62828"></div>
+        Evaluatie (begeleider)
+      </div>
+    </div>
+  </div>
 
   <!-- Matrix wordt hier dynamisch gegenereerd -->
   <div id="matrix-container"></div>
@@ -616,6 +679,9 @@
     const selector = btn.closest('.score-selector');
     selector.querySelectorAll('.score-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+
+    // Update radar chart live
+    bouwRadar();
   }
 
   // ══════════════════════════════════════════════════════
@@ -642,6 +708,7 @@
   function resetMatrix() {
     scores = {};
     bouwMatrix();
+    bouwRadar();
     verbergFeedback();
   }
 
@@ -654,6 +721,96 @@
 
   function verbergFeedback() {
     document.getElementById('feedback-bar').className = 'feedback-bar';
+  }
+
+  // ══════════════════════════════════════════════════════
+  // ❽  RADAR CHART
+  // ══════════════════════════════════════════════════════
+
+  // Alle indicatoren in volgorde voor het diagram (kort label)
+  const RADAR_LABELS = [
+    'Relatiegericht','Inlevingsvermogen','Toegankelijkheid','Overtuigkracht',
+    'Toekomstgericht','Creativiteit',
+    'Proactief','Profilerend','Doorzetting','Omgevingsgericht',
+    'Reflecterend','Zelfsturend',
+    'Doelgerichtheid','Procesgerichtheid','Oplossingsgericht','Stressbestendig',
+    'Taakgericht','Mensgericht','Aanpassings-\nvermogen','Leiderschap',
+    'Onderzoekend','Analytisch','Methodisch','Conceptueel','Oordeelsvorming',
+  ];
+
+  const RADAR_IDS = [
+    'com-1','com-2','com-3','com-4',
+    'inn-1','inn-2',
+    'ond-1','ond-2','ond-3','ond-4',
+    'ont-1','ont-2',
+    'org-1','org-2','org-3','org-4',
+    'sam-1','sam-2','sam-3','sam-4',
+    'pro-1','pro-2','pro-3','pro-4','pro-5',
+  ];
+
+  let radarChart = null;
+
+  function bouwRadar() {
+    const ptaData    = RADAR_IDS.map(id => (scores[id] && scores[id].pta)      ? scores[id].pta      : 0);
+    const evalData   = RADAR_IDS.map(id => (scores[id] && scores[id].evaluatie) ? scores[id].evaluatie : 0);
+
+    const ctx = document.getElementById('radar-chart').getContext('2d');
+
+    if (radarChart) {
+      radarChart.data.datasets[0].data = ptaData;
+      radarChart.data.datasets[1].data = evalData;
+      radarChart.update();
+      return;
+    }
+
+    radarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: RADAR_LABELS,
+        datasets: [
+          {
+            label: 'PTA (trainee)',
+            data: ptaData,
+            borderColor: '#1565C0',
+            backgroundColor: 'rgba(21,101,192,0.15)',
+            pointBackgroundColor: '#1565C0',
+            pointRadius: 4,
+            borderWidth: 2,
+          },
+          {
+            label: 'Evaluatie (begeleider)',
+            data: evalData,
+            borderColor: '#C62828',
+            backgroundColor: 'rgba(198,40,40,0.12)',
+            pointBackgroundColor: '#C62828',
+            pointRadius: 4,
+            borderWidth: 2,
+          },
+        ],
+      },
+      options: {
+        responsive: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          r: {
+            min: 0,
+            max: 6,
+            ticks: {
+              stepSize: 1,
+              font: { size: 10, family: 'Inter' },
+              color: '#9E9E9E',
+              backdropColor: 'transparent',
+            },
+            pointLabels: {
+              font: { size: 10, family: 'Inter' },
+              color: '#424242',
+            },
+            grid: { color: '#E0E0E0' },
+            angleLines: { color: '#E0E0E0' },
+          },
+        },
+      },
+    });
   }
 
   // ══════════════════════════════════════════════════════
@@ -682,6 +839,7 @@
     }
 
     bouwMatrix();
+    bouwRadar();
 
     document.getElementById('loading').style.display = 'none';
     document.getElementById('app').style.display = 'block';
