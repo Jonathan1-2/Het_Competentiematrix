@@ -846,27 +846,21 @@
     lijst.innerHTML = '';
 
     if (trainees.length === 0) {
-      // Onbekend account — uitloggen en fout tonen
-      localStorage.removeItem('cm_lg_email');
-      toonLoginScherm('leidinggevende');
-      const fout = document.getElementById('login-error');
-      fout.textContent = 'Dit e-mailadres is niet bekend als leidinggevende. Neem contact op met de beheerder.';
-      fout.style.display = 'block';
-      return;
+      lijst.innerHTML = `<div class="menu-geen-trainees">Er zijn nog geen trainees aan jouw account gekoppeld. Neem contact op met de beheerder.</div>`;
+    } else {
+      trainees.forEach(t => {
+        const kaart = document.createElement('div');
+        kaart.className = 'trainee-kaart';
+        kaart.innerHTML = `
+          <div>
+            <div class="naam">${t.trainee_naam || t.trainee_email}</div>
+            <div class="mail">${t.trainee_email}</div>
+          </div>
+          <span class="pijl">→</span>`;
+        kaart.addEventListener('click', () => openTraineeMatrix(t.trainee_email, t.trainee_naam));
+        lijst.appendChild(kaart);
+      });
     }
-
-    trainees.forEach(t => {
-      const kaart = document.createElement('div');
-      kaart.className = 'trainee-kaart';
-      kaart.innerHTML = `
-        <div>
-          <div class="naam">${t.trainee_naam || t.trainee_email}</div>
-          <div class="mail">${t.trainee_email}</div>
-        </div>
-        <span class="pijl">→</span>`;
-      kaart.addEventListener('click', () => openTraineeMatrix(t.trainee_email, t.trainee_naam));
-      lijst.appendChild(kaart);
-    });
 
     document.getElementById('menu-screen').style.display = 'block';
   }
