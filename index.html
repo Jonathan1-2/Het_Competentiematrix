@@ -931,7 +931,7 @@
   }
 
   async function slaScoreOp(indicatorId, kolom, waarde) {
-    await supabaseFetch(TABEL, {
+    await supabaseFetch(`${TABEL}?on_conflict=trainee_email,indicator_id`, {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
