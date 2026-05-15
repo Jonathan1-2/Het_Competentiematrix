@@ -881,7 +881,9 @@
     const url = `${SUPABASE_URL}/rest/v1/${path}`;
     const method = options.method || 'GET';
     const body = options.body || undefined;
-    const extraPrefer = options.headers && options.headers['Prefer'] ? options.headers['Prefer'] : 'return=minimal';
+    const preferHeader = (options.headers && options.headers['Prefer'])
+      ? options.headers['Prefer']
+      : 'return=minimal';
 
     const res = await fetch(url, {
       method,
@@ -889,7 +891,7 @@
         'apikey': SUPABASE_KEY,
         'Authorization': 'Bearer ' + SUPABASE_KEY,
         'Content-Type': 'application/json',
-        'Prefer': extraPrefer,
+        'Prefer': preferHeader,
       },
       body,
     });
@@ -916,10 +918,8 @@
   }
 
   async function slaScoreOp(indicatorId, kolom, waarde) {
-    // Upsert op basis van trainee_email + indicator_id
     await supabaseFetch(TABEL, {
       method: 'POST',
-      prefer: 'resolution=merge-duplicates,return=minimal',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
         trainee_email: email,
