@@ -389,9 +389,80 @@
     #radar-canvas-wrap canvas {
       max-width: 100%;
     }
+
+    /* ── Inlogscherm ── */
+    #login-screen {
+      display: none;
+      max-width: 480px;
+      margin: 80px auto;
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      border-left: 5px solid var(--lms-green);
+      box-shadow: var(--shadow);
+      padding: 32px 28px;
+    }
+    #login-screen h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--lms-green-dark);
+      margin-bottom: 6px;
+    }
+    #login-screen p {
+      font-size: 0.85rem;
+      color: var(--gray-700);
+      margin-bottom: 24px;
+    }
+    #login-screen label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gray-500);
+      margin-bottom: 6px;
+    }
+    #login-email-input {
+      width: 100%;
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: var(--gray-900);
+      margin-bottom: 16px;
+    }
+    #login-email-input:focus {
+      outline: none;
+      border-color: var(--lms-green);
+    }
+    #login-error {
+      font-size: 0.82rem;
+      color: var(--lms-red);
+      margin-bottom: 12px;
+      display: none;
+    }
+    .uitloggen-link {
+      font-size: 0.78rem;
+      color: var(--gray-500);
+      cursor: pointer;
+      text-decoration: underline;
+      margin-left: 12px;
+    }
+    .uitloggen-link:hover { color: var(--lms-red); }
   </style>
 </head>
 <body>
+
+<!-- Inlogscherm -->
+<div id="login-screen">
+  <h2>Competentiematrix</h2>
+  <p>Vul je e-mailadres in om je matrix te openen. Dit hoeft maar één keer.</p>
+  <label for="login-email-input">E-mailadres</label>
+  <input type="email" id="login-email-input" placeholder="naam@bedrijf.nl" />
+  <div id="login-error">Vul een geldig e-mailadres in.</div>
+  <button class="btn btn-primary" style="width:100%" onclick="bevestigLogin()">Matrix openen →</button>
+</div>
 
 <div id="loading">
   <div class="spinner"></div>
@@ -411,7 +482,10 @@
       </div>
       <div class="meta-field">
         <label>E-mailadres</label>
-        <input type="text" id="field-email" readonly />
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="text" id="field-email" readonly style="flex:1" />
+          <span class="uitloggen-link" onclick="uitloggen()" title="Ander account gebruiken">↩ Wissel</span>
+        </div>
       </div>
       <div class="meta-field">
         <label>Datum</label>
@@ -477,8 +551,8 @@
   // ══════════════════════════════════════════════════════
   // ❶  CONFIGURATIE — vervang door jouw eigen waarden
   // ══════════════════════════════════════════════════════
-  const SUPABASE_URL  = 'https://jgycmakaugasithuszlc.supabase.co';        // bijv. https://xxxx.supabase.co
-  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpneWNtYWthdWdhc2l0aHVzemxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4Mjg1MjcsImV4cCI6MjA5NDQwNDUyN30.egxFASu1eRM1fH-zeAhM8ibXdP0Koc5JedpsX-d7j2A';   // anon/public key uit Supabase dashboard
+  const SUPABASE_URL  = 'https://jgycmakaugasithuszlc.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpneWNtYWthdWdhc2l0aHVzemxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4Mjg1MjcsImV4cCI6MjA5NDQwNDUyN30.egxFASu1eRM1fH-zeAhM8ibXdP0Koc5JedpsX-d7j2A';
   const TABEL         = 'competenties';
 
   // ══════════════════════════════════════════════════════
@@ -551,8 +625,42 @@
   // ❸  URL-PARAMETERS UITLEZEN
   // ══════════════════════════════════════════════════════
   const params  = new URLSearchParams(window.location.search);
-  const email   = params.get('email') || 'onbekend@voorbeeld.nl';
-  const role    = params.get('role') || 'trainee'; // 'trainee' of 'leidinggevende'
+  const role    = params.get('role') || 'trainee';
+
+  // E-mail: voor leidinggevende via URL, voor trainee via localStorage
+  let email = params.get('email') || '';
+
+  // ── Login functies ──
+  function toonLoginScherm() {
+    document.getElementById('login-screen').style.display = 'block';
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'none';
+  }
+
+  function bevestigLogin() {
+    const input = document.getElementById('login-email-input').value.trim().toLowerCase();
+    const geldig = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
+    document.getElementById('login-error').style.display = geldig ? 'none' : 'block';
+    if (!geldig) return;
+    localStorage.setItem('cm_email', input);
+    email = input;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loading').style.flexDirection = 'column';
+    document.getElementById('loading').style.alignItems = 'center';
+    startApp();
+  }
+
+  function uitloggen() {
+    localStorage.removeItem('cm_email');
+    location.reload();
+  }
+
+  // Enter-toets in login veld
+  document.addEventListener('DOMContentLoaded', () => {
+    const inp = document.getElementById('login-email-input');
+    if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') bevestigLogin(); });
+  });
 
   // Scores worden hier opgeslagen als { indicatorId: { pta, evaluatie } }
   let scores = {};
@@ -816,8 +924,7 @@
   // ══════════════════════════════════════════════════════
   // ❼  INITIALISATIE
   // ══════════════════════════════════════════════════════
-  async function init() {
-    // Vul vaste velden
+  async function startApp() {
     document.getElementById('field-email').value = email;
     document.getElementById('field-datum').value = new Date().toISOString().split('T')[0];
 
@@ -828,21 +935,33 @@
       banner.innerHTML = '👤 Je bekijkt de matrix als <strong>leidinggevende / praktijkbegeleider</strong> — je kunt de evaluatiekolom invullen.';
     } else {
       banner.className = 'role-banner trainee';
-      banner.innerHTML = '🎓 Je vult de matrix in als <strong>trainee</strong> — vul de PTA-kolom in op basis van je eigen inschatting.';
+      banner.innerHTML = `🎓 Je vult de matrix in als <strong>trainee</strong> — vul de PTA-kolom in op basis van je eigen inschatting.`;
     }
 
-    // Data ophalen uit Supabase
-    try {
-      await laadData();
-    } catch (e) {
-      console.warn('Kon data niet laden:', e.message);
-    }
+    try { await laadData(); } catch (e) { console.warn('Kon data niet laden:', e.message); }
 
     bouwMatrix();
     bouwRadar();
 
     document.getElementById('loading').style.display = 'none';
     document.getElementById('app').style.display = 'block';
+  }
+
+  async function init() {
+    // Leidinggevende: email altijd via URL
+    if (role === 'leidinggevende' && email) {
+      await startApp();
+      return;
+    }
+    // Trainee: check localStorage
+    const opgeslagen = localStorage.getItem('cm_email');
+    if (opgeslagen) {
+      email = opgeslagen;
+      document.getElementById('loading').style.display = 'block';
+      await startApp();
+    } else {
+      toonLoginScherm();
+    }
   }
 
   init();
