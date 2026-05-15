@@ -450,9 +450,108 @@
       margin-left: 12px;
     }
     .uitloggen-link:hover { color: var(--lms-red); }
+
+    /* ── Leidinggevende keuzemenu ── */
+    #menu-screen {
+      display: none;
+      max-width: 560px;
+      margin: 60px auto;
+    }
+    .menu-header {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      border-left: 5px solid var(--lms-green);
+      box-shadow: var(--shadow);
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+    .menu-header h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--lms-green-dark);
+      margin-bottom: 4px;
+    }
+    .menu-header p {
+      font-size: 0.85rem;
+      color: var(--gray-700);
+    }
+    .menu-header .menu-email {
+      font-size: 0.78rem;
+      color: var(--gray-500);
+      margin-top: 8px;
+    }
+    .trainee-lijst {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .trainee-kaart {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .trainee-kaart:hover {
+      border-color: var(--lms-green);
+      background: var(--lms-green-light);
+    }
+    .trainee-kaart .naam {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--gray-900);
+    }
+    .trainee-kaart .mail {
+      font-size: 0.78rem;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+    .trainee-kaart .pijl {
+      font-size: 1.2rem;
+      color: var(--lms-green);
+    }
+    .menu-geen-trainees {
+      background: var(--lms-orange-light);
+      border: 1px solid #FFCC80;
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-size: 0.875rem;
+      color: var(--lms-orange);
+    }
+    .terug-knop {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--lms-green);
+      cursor: pointer;
+      margin-bottom: 12px;
+      padding: 6px 0;
+    }
+    .terug-knop:hover { color: var(--lms-green-dark); }
   </style>
 </head>
 <body>
+
+<!-- Leidinggevende keuzemenu -->
+<div id="menu-screen">
+  <div class="menu-header">
+    <h2>👤 Leidinggevende portaal</h2>
+    <p>Kies een trainee om de competentiematrix te bekijken en te beoordelen.</p>
+    <div class="menu-email" id="menu-email-label"></div>
+  </div>
+  <div class="trainee-lijst" id="trainee-lijst"></div>
+  <div style="margin-top:16px;text-align:right">
+    <span class="uitloggen-link" onclick="uitloggen()">↩ Uitloggen</span>
+  </div>
+</div>
 
 <!-- Inlogscherm -->
 <div id="login-screen">
@@ -470,6 +569,11 @@
 </div>
 
 <div id="app">
+
+  <!-- Terug naar menu (alleen voor leidinggevende) -->
+  <div id="terug-wrap" style="display:none;max-width:900px;margin:0 auto 8px">
+    <span class="terug-knop" onclick="toonMenu()">← Terug naar overzicht</span>
+  </div>
 
   <!-- Header -->
   <div class="header-card">
@@ -631,10 +735,20 @@
   let email = params.get('email') || '';
 
   // ── Login functies ──
-  function toonLoginScherm() {
-    document.getElementById('login-screen').style.display = 'block';
+  function toonLoginScherm(rolHint) {
+    const scherm = document.getElementById('login-screen');
+    // Pas tekst aan op basis van rol
+    if (rolHint === 'leidinggevende') {
+      scherm.querySelector('h2').textContent = 'Leidinggevende portaal';
+      scherm.querySelector('p').textContent = 'Vul je eigen e-mailadres in om het trainee-overzicht te openen.';
+    } else {
+      scherm.querySelector('h2').textContent = 'Competentiematrix';
+      scherm.querySelector('p').textContent = 'Vul je e-mailadres in om je matrix te openen. Dit hoeft maar één keer.';
+    }
+    scherm.style.display = 'block';
     document.getElementById('loading').style.display = 'none';
     document.getElementById('app').style.display = 'none';
+    document.getElementById('menu-screen').style.display = 'none';
   }
 
   function bevestigLogin() {
@@ -642,18 +756,90 @@
     const geldig = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
     document.getElementById('login-error').style.display = geldig ? 'none' : 'block';
     if (!geldig) return;
-    localStorage.setItem('cm_email', input);
+    const sleutel = role === 'leidinggevende' ? 'cm_lg_email' : 'cm_email';
+    localStorage.setItem(sleutel, input);
     email = input;
     document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('loading').style.display = 'flex';
-    document.getElementById('loading').style.flexDirection = 'column';
-    document.getElementById('loading').style.alignItems = 'center';
-    startApp();
+    toonLaadScherm();
+    if (role === 'leidinggevende') {
+      laadMenuLeidinggevende();
+    } else {
+      startApp();
+    }
+  }
+
+  function toonLaadScherm() {
+    const l = document.getElementById('loading');
+    l.style.display = 'flex';
+    l.style.flexDirection = 'column';
+    l.style.alignItems = 'center';
   }
 
   function uitloggen() {
     localStorage.removeItem('cm_email');
+    localStorage.removeItem('cm_lg_email');
     location.reload();
+  }
+
+  // ── Leidinggevende menu ──
+  async function laadMenuLeidinggevende() {
+    toonLaadScherm();
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('menu-screen').style.display = 'none';
+
+    let trainees = [];
+    try {
+      const data = await supabaseFetch(
+        `koppeling?leidinggevende_email=eq.${encodeURIComponent(email)}&select=trainee_email,trainee_naam`
+      );
+      trainees = data || [];
+    } catch(e) {
+      console.warn('Kon koppelingen niet laden:', e.message);
+    }
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('menu-email-label').textContent = `Ingelogd als: ${email}`;
+
+    const lijst = document.getElementById('trainee-lijst');
+    lijst.innerHTML = '';
+
+    if (trainees.length === 0) {
+      lijst.innerHTML = `<div class="menu-geen-trainees">Er zijn geen trainees aan jouw account gekoppeld. Neem contact op met de beheerder.</div>`;
+    } else {
+      trainees.forEach(t => {
+        const kaart = document.createElement('div');
+        kaart.className = 'trainee-kaart';
+        kaart.innerHTML = `
+          <div>
+            <div class="naam">${t.trainee_naam || t.trainee_email}</div>
+            <div class="mail">${t.trainee_email}</div>
+          </div>
+          <span class="pijl">→</span>`;
+        kaart.addEventListener('click', () => openTraineeMatrix(t.trainee_email, t.trainee_naam));
+        lijst.appendChild(kaart);
+      });
+    }
+
+    document.getElementById('menu-screen').style.display = 'block';
+  }
+
+  async function openTraineeMatrix(traineeEmail, traineeNaam) {
+    email = traineeEmail;
+    document.getElementById('menu-screen').style.display = 'none';
+    toonLaadScherm();
+
+    // Toon terugknop
+    document.getElementById('terug-wrap').style.display = 'block';
+
+    await startApp(traineeNaam);
+  }
+
+  function toonMenu() {
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('terug-wrap').style.display = 'none';
+    // Herstel leidinggevende email
+    email = localStorage.getItem('cm_lg_email') || '';
+    laadMenuLeidinggevende();
   }
 
   // Enter-toets in login veld
@@ -930,21 +1116,25 @@
   // ══════════════════════════════════════════════════════
   // ❼  INITIALISATIE
   // ══════════════════════════════════════════════════════
-  async function startApp() {
+  async function startApp(traineeNaam) {
     document.getElementById('field-email').value = email;
     document.getElementById('field-datum').value = new Date().toISOString().split('T')[0];
+    if (traineeNaam) document.getElementById('field-naam').value = traineeNaam;
 
     // Rolbanner
     const banner = document.getElementById('role-banner');
     if (role === 'leidinggevende') {
       banner.className = 'role-banner leidinggevende';
-      banner.innerHTML = '👤 Je bekijkt de matrix als <strong>leidinggevende / praktijkbegeleider</strong> — je kunt de evaluatiekolom invullen.';
+      banner.innerHTML = `👤 Je bekijkt de matrix van <strong>${traineeNaam || email}</strong> — je kunt de evaluatiekolom invullen.`;
     } else {
       banner.className = 'role-banner trainee';
       banner.innerHTML = `🎓 Je vult de matrix in als <strong>trainee</strong> — vul de PTA-kolom in op basis van je eigen inschatting.`;
     }
 
     try { await laadData(); } catch (e) { console.warn('Kon data niet laden:', e.message); }
+
+    // Reset radar chart voor nieuwe trainee
+    if (radarChart) { radarChart.destroy(); radarChart = null; }
 
     bouwMatrix();
     bouwRadar();
@@ -954,19 +1144,23 @@
   }
 
   async function init() {
-    // Leidinggevende: email altijd via URL
-    if (role === 'leidinggevende' && email) {
-      await startApp();
-      return;
-    }
-    // Trainee: check localStorage
-    const opgeslagen = localStorage.getItem('cm_email');
-    if (opgeslagen) {
-      email = opgeslagen;
-      document.getElementById('loading').style.display = 'block';
-      await startApp();
+    if (role === 'leidinggevende') {
+      const opgeslagen = localStorage.getItem('cm_lg_email');
+      if (opgeslagen) {
+        email = opgeslagen;
+        laadMenuLeidinggevende();
+      } else {
+        toonLoginScherm('leidinggevende');
+      }
     } else {
-      toonLoginScherm();
+      const opgeslagen = localStorage.getItem('cm_email');
+      if (opgeslagen) {
+        email = opgeslagen;
+        toonLaadScherm();
+        await startApp();
+      } else {
+        toonLoginScherm('trainee');
+      }
     }
   }
 
