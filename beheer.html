@@ -91,6 +91,67 @@
     }
     .verwijder-btn:hover { background: var(--lms-red-light); border-color: var(--lms-red); }
 
+    .bewerk-btn {
+      background: none;
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      color: var(--gray-700);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      margin-right: 4px;
+    }
+    .bewerk-btn:hover { background: var(--lms-green-light); border-color: var(--lms-green); color: var(--lms-green); }
+
+    .opslaan-btn {
+      background: var(--lms-green);
+      border: none;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      color: #fff;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      margin-right: 4px;
+      font-weight: 600;
+    }
+    .opslaan-btn:hover { background: var(--lms-green-dark); }
+
+    .annuleer-btn {
+      background: none;
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      color: var(--gray-700);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+    .annuleer-btn:hover { background: var(--gray-200); }
+
+    .inline-input {
+      border: 1px solid var(--lms-green);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: var(--gray-900);
+      background: #fff;
+      width: 100%;
+    }
+    .inline-input:focus { outline: none; }
+    .inline-select {
+      border: 1px solid var(--lms-green);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: var(--gray-900);
+      background: #fff;
+    }
+    .acties-cel { white-space: nowrap; text-align: right; width: 140px; }
+
     .toevoeg-rij {
       display: flex;
       gap: 8px;
@@ -167,7 +228,7 @@
         <th>Naam</th>
         <th>E-mailadres</th>
         <th>Rol</th>
-        <th></th>
+        <th class="acties-cel">Acties</th>
       </tr>
     </thead>
     <tbody id="gebruikers-tbody">
@@ -196,7 +257,7 @@
       <tr>
         <th>Leidinggevende</th>
         <th>Trainee</th>
-        <th></th>
+        <th class="acties-cel">Acties</th>
       </tr>
     </thead>
     <tbody id="koppelingen-tbody">
@@ -241,37 +302,77 @@
     setTimeout(() => el.className = 'feedback', 4000);
   }
 
-  // ── Gebruikers ──
-  async function laadGebruikers() {
-    const data = await api('gebruikers?order=rol,naam');
-    const tbody = document.getElementById('gebruikers-tbody');
+  // ══════════════════════════════
+  // GEBRUIKERS
+  // ══════════════════════════════
+  let gebruikersData = [];
 
-    // Vul dropdowns voor koppelingen
+  async function laadGebruikers() {
+    gebruikersData = await api('gebruikers?order=rol,naam') || [];
+    renderGebruikers();
+
+    // Vul dropdowns koppelingen
     const lgSelect = document.getElementById('koppel-lg');
     const trSelect = document.getElementById('koppel-trainee');
     lgSelect.innerHTML = '<option value="">— Leidinggevende —</option>';
     trSelect.innerHTML = '<option value="">— Trainee —</option>';
+    gebruikersData.forEach(g => {
+      if (g.rol === 'leidinggevende') lgSelect.innerHTML += `<option value="${g.email}">${g.naam || g.email}</option>`;
+      else trSelect.innerHTML += `<option value="${g.email}">${g.naam || g.email}</option>`;
+    });
+  }
 
-    if (!data || data.length === 0) {
+  function renderGebruikers(bewerkId = null) {
+    const tbody = document.getElementById('gebruikers-tbody');
+    if (!gebruikersData.length) {
       tbody.innerHTML = '<tr><td colspan="4" class="lege-staat">Geen gebruikers gevonden.</td></tr>';
       return;
     }
-
-    tbody.innerHTML = data.map(g => `
-      <tr>
+    tbody.innerHTML = gebruikersData.map(g => {
+      if (g.id === bewerkId) {
+        return `<tr id="rij-${g.id}">
+          <td><input class="inline-input" id="edit-naam-${g.id}" value="${g.naam || ''}" placeholder="Naam" /></td>
+          <td><input class="inline-input" id="edit-email-${g.id}" value="${g.email}" /></td>
+          <td>
+            <select class="inline-select" id="edit-rol-${g.id}">
+              <option value="trainee" ${g.rol === 'trainee' ? 'selected' : ''}>Trainee</option>
+              <option value="leidinggevende" ${g.rol === 'leidinggevende' ? 'selected' : ''}>Leidinggevende</option>
+            </select>
+          </td>
+          <td class="acties-cel">
+            <button class="opslaan-btn" onclick="slaGebruikerOp('${g.id}')">✓ Opslaan</button>
+            <button class="annuleer-btn" onclick="renderGebruikers()">Annuleer</button>
+          </td>
+        </tr>`;
+      }
+      return `<tr id="rij-${g.id}">
         <td>${g.naam || '—'}</td>
         <td>${g.email}</td>
         <td><span class="badge badge-${g.rol}">${g.rol}</span></td>
-        <td><button class="verwijder-btn" onclick="verwijderGebruiker('${g.id}', '${g.email}')">✕ Verwijder</button></td>
-      </tr>`).join('');
+        <td class="acties-cel">
+          <button class="bewerk-btn" onclick="renderGebruikers('${g.id}')" title="Bewerken">✏️</button>
+          <button class="verwijder-btn" onclick="verwijderGebruiker('${g.id}', '${g.email}')">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
 
-    data.forEach(g => {
-      if (g.rol === 'leidinggevende') {
-        lgSelect.innerHTML += `<option value="${g.email}">${g.naam || g.email}</option>`;
-      } else {
-        trSelect.innerHTML += `<option value="${g.email}">${g.naam || g.email}</option>`;
-      }
-    });
+  async function slaGebruikerOp(id) {
+    const naam  = document.getElementById(`edit-naam-${id}`).value.trim();
+    const email = document.getElementById(`edit-email-${id}`).value.trim().toLowerCase();
+    const rol   = document.getElementById(`edit-rol-${id}`).value;
+    if (!email) { toonFeedback('error', 'E-mailadres mag niet leeg zijn.'); return; }
+    try {
+      await api(`gebruikers?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ naam, email, rol }),
+      });
+      toonFeedback('success', `✓ ${email} bijgewerkt.`);
+      await laadGebruikers();
+      await laadKoppelingen();
+    } catch(e) {
+      toonFeedback('error', 'Opslaan mislukt. E-mailadres bestaat mogelijk al.');
+    }
   }
 
   async function voegGebruikerToe() {
@@ -283,11 +384,7 @@
       return;
     }
     try {
-      await api('gebruikers', {
-        method: 'POST',
-        prefer: 'return=minimal',
-        body: JSON.stringify({ naam, email, rol }),
-      });
+      await api('gebruikers', { method: 'POST', body: JSON.stringify({ naam, email, rol }) });
       document.getElementById('nieuw-naam').value = '';
       document.getElementById('nieuw-email').value = '';
       toonFeedback('success', `✓ ${email} toegevoegd als ${rol}.`);
@@ -310,40 +407,80 @@
     }
   }
 
-  // ── Koppelingen ──
+  // ══════════════════════════════
+  // KOPPELINGEN
+  // ══════════════════════════════
+  let koppelingenData = [];
+
   async function laadKoppelingen() {
-    const data = await api('koppeling?order=leidinggevende_email,trainee_naam');
+    koppelingenData = await api('koppeling?order=leidinggevende_email,trainee_naam') || [];
+    renderKoppelingen();
+  }
+
+  function renderKoppelingen(bewerkId = null) {
     const tbody = document.getElementById('koppelingen-tbody');
-    if (!data || data.length === 0) {
+    if (!koppelingenData.length) {
       tbody.innerHTML = '<tr><td colspan="3" class="lege-staat">Geen koppelingen gevonden.</td></tr>';
       return;
     }
-    tbody.innerHTML = data.map(k => `
-      <tr>
+
+    const leidinggevenden = gebruikersData.filter(g => g.rol === 'leidinggevende');
+    const trainees = gebruikersData.filter(g => g.rol === 'trainee');
+
+    tbody.innerHTML = koppelingenData.map(k => {
+      if (k.id === bewerkId) {
+        const lgOpties = leidinggevenden.map(g =>
+          `<option value="${g.email}" ${g.email === k.leidinggevende_email ? 'selected' : ''}>${g.naam || g.email}</option>`
+        ).join('');
+        const trOpties = trainees.map(g =>
+          `<option value="${g.email}" ${g.email === k.trainee_email ? 'selected' : ''}>${g.naam || g.email}</option>`
+        ).join('');
+        return `<tr>
+          <td><select class="inline-select" id="edit-lg-${k.id}" style="width:100%">${lgOpties}</select></td>
+          <td><select class="inline-select" id="edit-tr-${k.id}" style="width:100%">${trOpties}</select></td>
+          <td class="acties-cel">
+            <button class="opslaan-btn" onclick="slaKoppelingOp('${k.id}')">✓ Opslaan</button>
+            <button class="annuleer-btn" onclick="renderKoppelingen()">Annuleer</button>
+          </td>
+        </tr>`;
+      }
+      return `<tr>
         <td>${k.leidinggevende_email}</td>
         <td>${k.trainee_naam || k.trainee_email}<br><span style="font-size:0.75rem;color:var(--gray-500)">${k.trainee_email}</span></td>
-        <td><button class="verwijder-btn" onclick="verwijderKoppeling('${k.id}')">✕ Verwijder</button></td>
-      </tr>`).join('');
+        <td class="acties-cel">
+          <button class="bewerk-btn" onclick="renderKoppelingen('${k.id}')" title="Bewerken">✏️</button>
+          <button class="verwijder-btn" onclick="verwijderKoppeling('${k.id}')">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function slaKoppelingOp(id) {
+    const lg      = document.getElementById(`edit-lg-${id}`).value;
+    const trainee = document.getElementById(`edit-tr-${id}`).value;
+    const gebruiker = gebruikersData.find(g => g.email === trainee);
+    const naam = gebruiker ? gebruiker.naam : trainee;
+    try {
+      await api(`koppeling?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ leidinggevende_email: lg, trainee_email: trainee, trainee_naam: naam }),
+      });
+      toonFeedback('success', '✓ Koppeling bijgewerkt.');
+      await laadKoppelingen();
+    } catch(e) {
+      toonFeedback('error', 'Opslaan mislukt.');
+    }
   }
 
   async function voegKoppelingToe() {
     const lg      = document.getElementById('koppel-lg').value;
     const trainee = document.getElementById('koppel-trainee').value;
-    if (!lg || !trainee) {
-      toonFeedback('error', 'Kies een leidinggevende en een trainee.');
-      return;
-    }
-
-    // Haal trainee naam op
-    const gebruikers = await api(`gebruikers?email=eq.${encodeURIComponent(trainee)}&select=naam`);
-    const naam = gebruikers && gebruikers[0] ? gebruikers[0].naam : trainee;
-
+    if (!lg || !trainee) { toonFeedback('error', 'Kies een leidinggevende en een trainee.'); return; }
+    const gebruiker = gebruikersData.find(g => g.email === trainee);
+    const naam = gebruiker ? gebruiker.naam : trainee;
     try {
-      await api('koppeling', {
-        method: 'POST',
-        body: JSON.stringify({ leidinggevende_email: lg, trainee_email: trainee, trainee_naam: naam }),
-      });
-      toonFeedback('success', `✓ Koppeling aangemaakt.`);
+      await api('koppeling', { method: 'POST', body: JSON.stringify({ leidinggevende_email: lg, trainee_email: trainee, trainee_naam: naam }) });
+      toonFeedback('success', '✓ Koppeling aangemaakt.');
       await laadKoppelingen();
     } catch(e) {
       toonFeedback('error', 'Koppeling mislukt. Bestaat deze combinatie al?');
@@ -361,7 +498,6 @@
     }
   }
 
-  // ── Init ──
   async function init() {
     await Promise.all([laadGebruikers(), laadKoppelingen()]);
   }
